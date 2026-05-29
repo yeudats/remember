@@ -204,70 +204,6 @@
         text-align: right;
       }
 
-      #ingredients-list {
-        display: flex;
-        flex-direction: column;
-        width: 100%;
-        margin: 5px 0;
-      }
-
-      #display-ingredients {
-        width: 100%;
-        padding: 0;
-        margin: 0.5rem 0;
-        list-style: none;
-        text-align: right;
-        direction: rtl;
-      }
-
-      #display-ingredients li {
-        margin-bottom: 0.5rem;
-        padding: 0.4rem 0;
-        display: flex;
-        box-sizing: border-box;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 8px;
-        line-height: 1.4;
-        word-break: keep-all;
-        overflow-wrap: anywhere;
-        user-select: text !important;
-        -webkit-user-select: text !important;
-        -ms-user-select: text !important;
-      }
-
-      #display-ingredients li::before {
-        content: "🔪 ";
-        flex-shrink: 0;
-      }
-
-      #display-method {
-        width: 100%;
-        box-sizing: border-box;
-        resize: none;
-        overflow: hidden;
-        border: 1px solid var(--readonly-border);
-        background: var(--readonly-bg);
-        padding: 15px;
-        border-radius: 12px;
-        line-height: 1.6;
-        font-family: inherit;
-        font-size: 1rem;
-      }
-
-      #display-name {
-        text-align: center;
-        overflow-wrap: break-word;
-        margin-bottom: 20px;
-        color: var(--blue-accent);
-        width: 100%;
-        max-width: 100%;
-        margin-top: 0;
-        user-select: text !important;
-        -webkit-user-select: text !important;
-        -ms-user-select: text !important;
-      }
-
       .label {
         width: 100%;
         text-align: right;
@@ -289,49 +225,6 @@
         margin-right: auto;
         border-radius: 50%;
         object-fit: cover;
-      }
-
-      .search-group {
-        display: flex;
-        width: 85%;
-        max-width: 500px;
-        min-height: 3.5rem;
-        margin-bottom: 1.5rem;
-        border: 2px solid #93c5fd;
-        border-radius: 0.75rem;
-        overflow: hidden;
-        background: #fff;
-        transition: all 0.3s ease;
-      }
-
-      .search-group:focus-within {
-        border-color: var(--blue-accent);
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-      }
-
-      .search-input {
-        flex: 4;
-        border: none !important;
-        border-radius: 0 !important;
-        margin: 0 !important;
-        height: 100%;
-      }
-
-      .search-input:focus {
-        outline: none;
-        background-color: #fbfdff;
-      }
-
-      .search-button {
-        flex: 1;
-        border: none !important;
-        border-right: 1px solid #bfdbfe;
-        border-radius: 0 !important;
-        margin: 0 !important;
-        height: auto !important;
-        min-height: 3.5rem;
-        background: #eff6ff;
-        color: var(--blue-accent);
       }
 
       .marquee-container {
@@ -698,7 +591,9 @@
                 document.getElementById("text-name").value = text.name;
                 document.getElementById("text-name").readOnly = true;
                 document.getElementById("text-name").classList.add("readonly-box");
+                autoResize(document.getElementById("text-name"));
                 document.getElementById("text-content").value = text.content;
+                autoResize(document.getElementById("text-content"));
                 navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
                 return;
               }
@@ -1008,6 +903,12 @@
 
         let words = text.content.split(" ");
 
+        if (words.length < 6) {
+          showToast("הטקסט קצר מדי, יש צורך לפחות ב-6 מילים");
+          navigateTo("view-textPage", true);
+          return;
+        }
+
         document.getElementById("save-btn").style.display = "none";
 
         document.getElementById("view-add-title").innerText = "השלם את המשפט";
@@ -1022,7 +923,7 @@
         
         document.getElementById("text-content").onfocus = function() {
           if (this.value.endsWith(" ...")) {
-            this.value = this.value.slice(0, -4);
+            this.value = this.value.slice(0, -3);
             autoResize(this);
           }
           return;
@@ -1058,9 +959,18 @@
           }
         };
 
+        // כפתור לתחילת משחק חדש והבאת משפט חדש
+        document.getElementById("next-word-btn").style.display = "block";
+        document.getElementById("next-word-btn").innerText = "משפט חדש";
+        document.getElementById("next-word-btn").onclick = function() {
+          Complete_the_sentence();
+        }
+
         allTexts_for_Complete_the_sentence();
 
-        navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
+        if (document.querySelector(".view.active").id !== "view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence") {
+          navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
+        }
         return;
       }
 
@@ -1147,72 +1057,6 @@
         return cleaned.replace(/^ /g, "");
       }
 
-      // function add_edit_TextPage(edit = false) {
-      //   const name = prompt("הכנס שם לטקסט:");
-      //   if (!name) {
-      //     showToast("השם לא יכול להיות ריק");
-      //     return;
-      //   }
-
-      //   const content = prompt("הכנס את תוכן הטקסט:");
-      //   if (!content) {
-      //     showToast("התוכן לא יכול להיות ריק");
-      //     return;
-      //   }
-
-      //   if (edit) {
-      //     const index = cachedTexts.findIndex((t) => t.name === name);
-      //     if (index !== -1) {
-      //       cachedTexts[index].content = content;
-      //       showToast("הטקסט עודכן בהצלחה!");
-      //     } else {
-      //       showToast("לא נמצא טקסט עם השם הזה");
-      //       return;
-      //     }
-      //   } else {
-      //     if (cachedTexts.some((t) => t.name === name)) {
-      //       showToast("כבר קיים טקסט בשם הזה");
-      //       return;
-      //     }
-      //     cachedTexts.unshift({ name, content });
-      //     showToast("הטקסט נשמר בהצלחה!");
-      //   }
-
-      //   saveToCache();
-      // }
-
-    //   window.onload = () => {
-    //     loadFromCache();
-    //     backgroundSync();
-
-    //     navigateTo("view-home", true);
-
-    //     const searchInput = document.getElementById("search-input");
-    //     if (searchInput) {
-    //       searchInput.addEventListener("keydown", (e) => {
-    //         if (e.key === "Enter") {
-    //           e.preventDefault();
-    //           searchRecipesLocal(searchInput.value);
-    //           // searchInput.value = "";
-    //         }
-    //       });
-    //     }
-
-    //     const recipeNameInput = document.getElementById("recipe-name");
-    //     if (recipeNameInput) {
-    //       recipeNameInput.addEventListener("keydown", (e) => {
-    //         if (e.key === "Enter") {
-    //           e.preventDefault();
-
-    //           const firstIngredient = document.querySelector(".ing-input");
-
-    //           if (firstIngredient) {
-    //             firstIngredient.focus();
-    //           }
-    //         }
-    //       });
-    //     }
-    //   };
 
       window.onpopstate = (e) => {
         if (
@@ -1223,22 +1067,6 @@
         }
 
         const targetView = e.state && e.state.view ? e.state.view : "view-home";
-
-        // // מנגנון הגנה: אם המשתמש מנסה לחזור לדף טקסט, נבדוק אם הטקסט עדיין קיים
-        // if (targetView === "view-text") {
-        //   const textExists = cachedTexts.find(
-        //     (t) => t.name === currentTextName,
-        //   );
-        //   if (!textExists) {
-        //     // הטקסט נמחק! נעיף אותו לדף הבית במקום לדף שבור
-        //     history.replaceState({ view: "view-home" }, "", "#home");
-        //     switchViewElement("view-home");
-        //     return;
-        //   } else {
-        //     // הטקסט קיים, נרנדר אותו מחדש למקרה שהוא בדיוק נערך!
-        //     renderTextData(textExists);
-        //   }
-        // }
 
         switchViewElement(targetView);
       };
@@ -1259,40 +1087,8 @@
         switchViewElement(viewId);
       }
 
-    //   // מצב עריכה
-    //   function openEditRecipe() {
-    //     isEditMode = true;
-    //     const recipe = cachedRecipes.find((r) => r.name === currentRecipeName);
-    //     if (!recipe) return;
-        
-    //     document.getElementById("view-add-title").innerText = "עדכון מתכון";
-        
-    //     const nameInput = document.getElementById("recipe-name");
-    //     nameInput.value = recipe.name;
-    //     nameInput.readOnly = true;
-    //     nameInput.classList.add("readonly-box"); // משחיר את הרקע קצת
-        
-    //     groceryList = [...recipe.ingredients, ""];
-    //     renderIngredients();
-
-    //     document.getElementById("recipe-method").value = recipe.method;
-        
-    //     navigateTo("view-add", true);
-
-    //     // תיקון הגובה: נמתין שהדף יוצג ואז נחשב גובה
-    //     setTimeout(() => {
-    //       autoResize(nameInput);
-
-    //       document.querySelectorAll(".ing-input").forEach((input) => {
-    //         autoResize(input);
-    //       });
-
-    //       autoResize(document.getElementById("recipe-method"));
-    //     }, 350);
-    //   }
-
-    //   // חזרה למצב הוספה רגיל
       function resetAddForm() {
+        revealedWordsIndex = 0;
         document.getElementById("view-add-title").innerText = "הוספת טקסט חדש";
         
         const nameInput = document.getElementById("text-name");
@@ -1337,6 +1133,7 @@
         document.getElementById("previous-word-btn").style.display = "none";
 
         document.getElementById("save-btn").innerHTML = "שמירה";
+        document.getElementById("save-btn").style.display = "block";
         document.getElementById("save-btn").onclick = saveText;
       }
 
@@ -1388,110 +1185,6 @@
         return text;
       }
 
-    //   function normalizeHebrew(str) {
-    //     return str
-    //       .replace(/ך/g, "כ")
-    //       .replace(/ם/g, "מ")
-    //       .replace(/ן/g, "נ")
-    //       .replace(/ף/g, "פ")
-    //       .replace(/ץ/g, "צ");
-    //   }
-
-    //   // חיפוש כולל תמיכה בנקודה (.)
-    //   function searchRecipesLocal(query) {
-    //     lastSearchQuery = query;
-    //     const term = query.trim();
-    //     let results = cachedRecipes;
-
-    //     if (term && term !== ".") {
-    //       results = cachedRecipes.filter((r) =>
-    //         normalizeHebrew(r.name).includes(normalizeHebrew(term)),
-    //       );
-    //       results.sort((a, b) => a.name.indexOf(term) - b.name.indexOf(term));
-    //     }
-
-    //     const list = document.getElementById("search-results");
-    //     list.innerHTML = "";
-
-    //     if (results.length === 0) {
-    //       list.innerHTML = "<p style='color: #64748b; display: flex; align-items: center; justify-content: center; text-decoration: none;'>לא נמצאו מתכונים</p>";
-    //       showToast("לא נמצאו מתכונים");
-    //     } else {
-    //       results.forEach((recipe) => {
-    //         const b = document.createElement("button");
-    //         b.className = "button";
-    //         b.innerHTML = createMarqueeText(recipe.name);
-    //         b.onclick = () => {
-    //           // 🔴 התיקון: שולפים את הנתונים המעודכנים ביותר לפי השם רגע לפני המעבר
-    //           const latestData =
-    //             cachedRecipes.find((r) => r.name === recipe.name) || recipe;
-
-    //           renderRecipeData(latestData);
-    //           navigateTo("view-recipe", false);
-    //         };
-    //         list.appendChild(b);
-    //       });
-    //       navigateTo("view-search", false);
-    //       if (document.getElementById("search-input")) {
-    //         document.getElementById("search-input").value = "";
-    //       }
-    //     }
-    //   }
-
-    //   function renderRecipeData(recipe) {
-    //     currentRecipeName = recipe.name;
-    //     document.getElementById("display-name").innerHTML = createMarqueeText(
-    //       recipe.name,
-    //     );
-    //     document.getElementById("display-ingredients").innerHTML =
-    //       recipe.ingredients.map((i) => `<li>${i}</li>`).join("");
-    //     document.getElementById("display-method").innerText = recipe.method;
-    //   }
-
-    //   async function saveRecipe() {
-    //     const name = document.getElementById("recipe-name").value.trim();
-    //     const method = document.getElementById("recipe-method").value.trim();
-    //     const ingredients = groceryList.filter((item) => item.trim() !== "");
-
-    //     if (!isEditMode && cachedRecipes.some((r) => r.name === name)) {
-    //       showToast("כבר קיים מתכון בשם הזה");
-    //       return;
-    //     }
-
-    //     if (!name || !method || ingredients.length === 0) {
-    //       showToast("חובה למלא שם, מצרכים ואופן הכנה");
-    //       return;
-    //     }
-
-    //     const newRecipe = { name, ingredients, method };
-    //     const saveBtn = document.getElementById("save-btn");
-    //     saveBtn.disabled = true;
-
-    //     const actionType = isEditMode ? "updateRecipe" : "addRecipe";
-
-    //     // 1. ממשק אופטימי - שמירה בזיכרון
-    //     if (isEditMode) {
-    //       const index = cachedRecipes.findIndex((r) => r.name === name);
-    //       if (index > -1) cachedRecipes[index] = newRecipe;
-    //     } else {
-    //       cachedRecipes.unshift(newRecipe);
-    //     }
-    //     saveToCache();
-
-    //     showToast(isEditMode ? "המתכון עודכן בהצלחה!" : "המתכון נשמר בהצלחה!");
-    //     renderRecipeData(newRecipe);
-    //     saveBtn.disabled = false;
-
-    //     if (isEditMode) {
-    //       navigateTo("view-recipe", true);
-    //     } else {
-    //       // אם זה מתכון חדש, הולכים קדימה
-    //       renderRecipeData(newRecipe);
-    //       navigateTo("view-recipe", true);
-    //     }
-
-    //   }
-
       function askDeleteText() {
         document.getElementById("delete-modal").classList.add("active");
       }
@@ -1515,99 +1208,14 @@
         allTextsPage("delete");
       };
 
-    //   function renderIngredients() {
-    //     const container = document.getElementById("ingredients-list");
-    //     container.innerHTML = "";
-    //     groceryList.forEach((item, index) => {
-    //       createIngredientInput(index, item);
-    //     });
-    //   }
-
-    //   function createIngredientInput(index, value) {
-    //     const container = document.getElementById("ingredients-list");
-    //     const input = document.createElement("textarea");
-    //     input.type = "text";
-    //     input.className = "input ing-input";
-    //     input.dataset.index = index;
-    //     input.value = value;
-    //     input.placeholder = index === 0 ? "הוסף מצרך ראשון" : "הוסף מצרך נוסף";
-
-    //     // כיבוי השלמה אוטומטית לשדות המצרכים הדינמיים
-    //     input.setAttribute("autocorrect", "off");
-    //     input.setAttribute("autocapitalize", "off");
-    //     input.setAttribute("spellcheck", "false");
-
-    //     input.setAttribute("autocomplete", "off");
-    //     input.setAttribute("data-lpignore", "true");
-    //     input.setAttribute("data-form-type", "other");
-    //     input.setAttribute("name", "no-autofill");
-
-    //     input.oninput = (e) => {
-    //       const currentIndex = Number(input.dataset.index);
-
-    //       groceryList[currentIndex] = e.target.value;
-
-    //       autoResize(e.target);
-
-    //       if (
-    //         currentIndex === groceryList.length - 1 &&
-    //         e.target.value.trim() !== ""
-    //       ) {
-    //         groceryList.push("");
-    //         createIngredientInput(groceryList.length - 1, "");
-    //       }
-    //     };
-
-    //     input.onkeydown = (e) => {
-    //       const currentIndex = Number(input.dataset.index);
-
-    //       if (e.key === "Enter" || e.key === "Tab") {
-    //         if (e.key === "Enter") {
-    //           e.preventDefault();
-    //         }
-
-    //         const allInputs = container.querySelectorAll(".ing-input");
-
-    //         if (allInputs[currentIndex + 1]) {
-    //           allInputs[currentIndex + 1].focus();
-    //         }
-    //       }
-    //     };
-
-    //     input.onblur = (e) => {
-    //       const inputEl = e.target;
-
-    //       const currentIndex = Number(inputEl.dataset.index);
-    //       const val = inputEl.value.trim();
-
-    //       groceryList[currentIndex] = val;
-
-    //       const isNotLast = currentIndex !== groceryList.length - 1;
-    //       const hasMoreThanOne = groceryList.length > 1;
-
-    //       if (val === "" && isNotLast && hasMoreThanOne) {
-    //         // מחיקה מהמערך
-    //         groceryList.splice(currentIndex, 1);
-
-    //         // מחיקה מה־DOM
-    //         inputEl.remove();
-
-    //         // עדכון אינדקסים לכל השדות שנשארו
-    //         container.querySelectorAll(".ing-input").forEach((el, i) => {
-    //           el.dataset.index = i;
-    //         });
-    //       }
-    //     };
-
-    //     container.appendChild(input);
-    //     autoResize(input);
-    //   }
 
       function autoResize(el) {
-        const scrollY = window.scrollY;
-        el.style.height = "auto";
-        el.style.height = el.scrollHeight + "px";
-        window.scrollTo(0, scrollY);
+        setTimeout(() => {
+          const scrollY = window.scrollY;
+          el.style.height = "auto";
+          el.style.height = el.scrollHeight + "px";
+          window.scrollTo(0, scrollY);
+        }, 0);
       }
 
       document.addEventListener(
