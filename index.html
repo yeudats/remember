@@ -1,0 +1,1652 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <link rel="manifest" href="manifest.json" />
+
+    <title>Remember</title>
+    <style>
+      * {
+        -webkit-touch-callout: none;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        -webkit-user-drag: none;
+        -webkit-touch-callout: none;
+      }
+      :root {
+        --bg-gradient: linear-gradient(
+          135deg,
+          #fef9c3 0%,
+          #e0f2fe 50%,
+          #f3e8ff 100%
+        );
+        --btn-gradient: linear-gradient(135deg, #6ee7b7 0%, #3b82f6 100%);
+        --btn-hover-gradient: linear-gradient(135deg, #3b82f6 0%, #6ee7b7 100%);
+        --blue-accent: #6366f1;
+        --text-main: #334155;
+        --container-bg: rgba(255, 255, 255, 0.85);
+        --readonly-bg: #f8fafc;
+        --readonly-text: #475569;
+        --readonly-border: #e2e8f0;
+      }
+
+      html {
+        min-height: 100%;
+        overflow-anchor: none;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        background: linear-gradient(
+          135deg,
+          #fef9c3 0%,
+          #e0f2fe 50%,
+          #f3e8ff 100%
+        );
+
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text-main);
+
+        font-family:
+          "Segoe UI",
+          system-ui,
+          -apple-system,
+          sans-serif;
+
+        background: transparent;
+
+        width: 100%;
+        overflow-anchor: none;
+        overflow-x: hidden;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .view {
+        display: none;
+        opacity: 0;
+        width: 100%;
+        box-sizing: border-box;
+        transition: opacity 0.25s ease;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+      }
+
+      .view.active {
+        display: flex;
+        opacity: 1;
+        pointer-events: auto;
+        box-sizing: border-box;
+      }
+
+      .page-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 85%;
+        max-width: 500px;
+        margin-top: max(2rem, env(safe-area-inset-top));
+        margin-bottom: max(2rem, env(safe-area-inset-bottom));
+        padding: 1.5rem;
+        padding-bottom: 2rem;
+        background-color: var(--container-bg);
+        border-radius: 1.2rem;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-sizing: border-box;
+      }
+
+      .button {
+        height: 3rem;
+        width: 100%;
+        background: var(--btn-gradient);
+        color: #fff;
+        border-radius: 0.75rem;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin: 0.5rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        z-index: 10;
+        flex-shrink: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      .delButton {
+        width: 48%;
+        margin: auto;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .button:hover {
+          transform: scale(1.02);
+          box-shadow: 0 4px 12px rgba(253, 160, 133, 0.4);
+        }
+        .button:active {
+          transform: scale(0.98);
+          box-shadow: 0 4px 12px rgba(253, 160, 133, 0.4);
+        }
+      }
+
+      .input {
+        min-height: 55px;
+        height: 55px;
+        padding-right: 1rem;
+        padding-left: 1rem;
+        align-content: center;
+      }
+      .input,
+      .textarea {
+        width: 100%;
+        margin: 0.5rem 0;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
+        font-size: 16px;
+        line-height: 1.6;
+        padding-right: 1rem;
+        padding-left: 1rem;
+        resize: none;
+        overflow: hidden;
+        overflow-anchor: none;
+        box-sizing: border-box;
+        background: #fff;
+        outline: none;
+        transition: all 0.3s ease;
+        user-select: text !important;
+        -webkit-user-select: text !important;
+        -ms-user-select: text !important;
+        font-family: inherit;
+      }
+
+      .textarea {
+        min-height: 120px;
+        padding: 0.75rem 1rem;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        word-break: break-word;
+      }
+
+      .input:focus,
+      .textarea:focus {
+        border-color: var(--blue-accent);
+        background: #f0f9ff;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+
+      .readonly-box {
+        background-color: var(--readonly-bg) !important;
+        color: var(--readonly-text);
+        border: 1px solid var(--readonly-border);
+        text-align: right;
+      }
+
+      #ingredients-list {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      #display-ingredients {
+        width: 100%;
+        padding: 0;
+        margin: 0.5rem 0;
+        list-style: none;
+        text-align: right;
+        direction: rtl;
+      }
+
+      #display-ingredients li {
+        margin-bottom: 0.5rem;
+        padding: 0.4rem 0;
+        display: flex;
+        box-sizing: border-box;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+        line-height: 1.4;
+        word-break: keep-all;
+        overflow-wrap: anywhere;
+        user-select: text !important;
+        -webkit-user-select: text !important;
+        -ms-user-select: text !important;
+      }
+
+      #display-ingredients li::before {
+        content: "🔪 ";
+        flex-shrink: 0;
+      }
+
+      #display-method {
+        width: 100%;
+        box-sizing: border-box;
+        resize: none;
+        overflow: hidden;
+        border: 1px solid var(--readonly-border);
+        background: var(--readonly-bg);
+        padding: 15px;
+        border-radius: 12px;
+        line-height: 1.6;
+        font-family: inherit;
+        font-size: 1rem;
+      }
+
+      #display-name {
+        text-align: center;
+        overflow-wrap: break-word;
+        margin-bottom: 20px;
+        color: var(--blue-accent);
+        width: 100%;
+        max-width: 100%;
+        margin-top: 0;
+        user-select: text !important;
+        -webkit-user-select: text !important;
+        -ms-user-select: text !important;
+      }
+
+      .label {
+        width: 100%;
+        text-align: right;
+        font-weight: 600;
+        color: var(--blue-accent);
+        margin-top: 0.8rem;
+        font-size: 1.1rem;
+        pointer-events: none;
+      }
+
+      .logo-home {
+        width: clamp(120px, 35vh, 250px);
+        aspect-ratio: 1 / 1;
+        display: block;
+
+        margin-top: clamp(0rem, min(15vh, 50vw), 8rem);
+        margin-bottom: clamp(0rem, min(15vh, 50vw), 8rem);
+        margin-left: auto;
+        margin-right: auto;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .search-group {
+        display: flex;
+        width: 85%;
+        max-width: 500px;
+        min-height: 3.5rem;
+        margin-bottom: 1.5rem;
+        border: 2px solid #93c5fd;
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: #fff;
+        transition: all 0.3s ease;
+      }
+
+      .search-group:focus-within {
+        border-color: var(--blue-accent);
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+
+      .search-input {
+        flex: 4;
+        border: none !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        height: 100%;
+      }
+
+      .search-input:focus {
+        outline: none;
+        background-color: #fbfdff;
+      }
+
+      .search-button {
+        flex: 1;
+        border: none !important;
+        border-right: 1px solid #bfdbfe;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        height: auto !important;
+        min-height: 3.5rem;
+        background: #eff6ff;
+        color: var(--blue-accent);
+      }
+
+      .marquee-container {
+        width: 100%;
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+        display: flex;
+        direction: rtl;
+      }
+
+      .marquee-text {
+        display: inline-block;
+        white-space: nowrap;
+        animation: marquee-infinite 20s linear infinite;
+        will-change: transform;
+      }
+
+      @keyframes marquee-infinite {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(50%);
+        }
+      }
+
+      .button:hover .marquee-text {
+        animation-play-state: paused;
+      }
+
+      .button:active .marquee-text {
+        animation-play-state: paused;
+      }
+
+      #toast {
+        position: fixed;
+        left: 50%;
+        bottom: 2rem;
+        transform: translate(-50%, 50px);
+        background: rgba(15, 23, 42, 0.9);
+        color: #fff;
+        padding: 0.8rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 500;
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        z-index: 9999;
+        pointer-events: none;
+        white-space: nowrap; /* מונע ירידת שורה */
+        width: max-content; /* מתאים את הרוחב אוטומטית לטקסט */
+        max-width: 90vw; /* מגבלה למקרה שהטקסט ארוך מהמסך עצמו */
+        overflow: hidden;
+        text-overflow: ellipsis; /* מוסיף ... אם הטקסט ארוך מהמסך */
+      }
+      #toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(3px);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .modal-overlay.active {
+        display: flex;
+        opacity: 1;
+      }
+      .modal-content {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        width: 85%;
+        max-width: 320px;
+        text-align: center;
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+      }
+      .modal-overlay.active .modal-content {
+        transform: scale(1);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="toast">הודעה</div>
+
+    <div id="delete-modal" class="modal-overlay" onclick="closeDeleteModal()">
+      <div class="modal-content" onclick="event.stopPropagation()">
+        <h3 style="color: #ef4444; margin-top: 0">מחיקת טקסט</h3>
+        <p>האם למחוק את הטקסט לצמיתות?</p>
+        <div style="display: flex; gap: 15px; margin-top: 20px">
+          <button
+            class="button delButton"
+            style="background: #ef4444"
+            onclick="DeleteText()"
+          >
+            כן, מחק
+          </button>
+          <button
+            class="button delButton"
+            style="background: #94a3b8"
+            onclick="closeDeleteModal()"
+          >
+            ביטול
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-home" class="view active">
+      <img
+        src="icon.png"
+        class="logo-home"
+        alt="Logo"
+        onerror="this.style.display = 'none'"
+        oncontextmenu="return false;"
+        ondragstart="return false;"
+      />
+      
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          allTextsPage('textPage');
+        "
+      >
+        בחר טקסט
+      </button>
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          navigateTo('view-edit_texts_page', false);
+        "
+      >
+        ערוך טקסטים
+      </button>
+    </div>
+
+    <div id="view-texts" class="view">
+      <div class="page-container">
+        <h2 style="color: var(--blue-accent)">טקסטים</h2>
+        <div id="all_texts" style="width: 100%"></div>
+      </div>
+    </div>
+
+    <div id="view-textPage" class="view">
+      <img
+        src="icon.png"
+        class="logo-home"
+        alt="Logo"
+        onerror="this.style.display = 'none'"
+        oncontextmenu="return false;"
+        ondragstart="return false;"
+      />
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          Type_from_memory();
+        "
+      >
+        הקלד מהזיכרון
+      </button>
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          Reveal_the_next_word();
+        "
+      >
+        חשוף את המילה הבאה
+      </button>
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          Complete_the_sentence();
+        "
+      >
+        השלם את המשפט
+      </button>
+    </div>
+
+    <div id="view-edit_texts_page" class="view">
+      <img
+        src="icon.png"
+        class="logo-home"
+        alt="Logo"
+        onerror="this.style.display = 'none'"
+        oncontextmenu="return false;"
+        ondragstart="return false;"
+      />
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          resetAddForm();
+          navigateTo('view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence', false);
+        "
+      >
+        הוסף טקסט חדש
+      </button>
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          allTextsPage('edit');
+        "
+      >
+        ערוך טקסט קיים
+      </button>
+
+      <button
+        class="button"
+        style="width: 85%; max-width: 500px"
+        onclick="
+          allTextsPage('delete');
+        "
+      >
+        מחק טקסטים
+      </button>
+    </div>
+
+    <div id="view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence" class="view">
+      <div class="page-container">
+        <h2
+          id="view-add-title"
+          class="label"
+          style="text-align: center; font-size: 1.5rem"
+        >
+          הוספת טקסט חדש
+        </h2>
+
+        <div class="label">שם הטקסט</div>
+        <textarea
+          id="text-name"
+          class="input"
+          placeholder="הכנס שם לטקסט..."
+          oninput="
+            this.value = sanitizeText(this.value);
+            autoResize(this);
+          "
+          onblur="
+            this.value = this.value.trim();
+            autoResize(this);
+          "
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          inputmode="text"
+          data-form-type="other"
+        ></textarea>
+
+        <div class="label" id="original-content-label" style="display: none">תוכן הטקסט המקורי</div>
+        <textarea
+          id="original-text-content"
+          class="textarea"
+          readonly
+          style="display: none"
+        ></textarea>
+
+        <div class="label" id="content-label">תוכן הטקסט</div>
+        <textarea
+          id="text-content"
+          class="textarea"
+          placeholder="הכנס את תוכן הטקסט..."
+          oninput="
+            this.value = sanitizeText(this.value);
+            autoResize(this);
+          "
+          onblur="
+            this.value = this.value.trim();
+            autoResize(this);
+          "
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          inputmode="text"
+          data-form-type="other"
+        ></textarea>
+
+        <button class="button" id="next-word-btn">חשוף את המילה הבאה</button>
+        <button class="button" id="all-texts-btn">חשוף את כל הטקסט</button>
+        <button class="button" id="previous-word-btn">חשוף את המילה הקודמת</button>
+
+        <button class="button" id="save-btn" onclick="saveText()">
+          שמירה
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const CACHE_KEY = "Remember_data";
+
+      let cachedTexts = [];
+      let currentTextName = "";
+      let revealedWordsIndex = 0;
+
+      window.onload = () => {
+        loadFromCache();
+        navigateTo("view-home", true);
+      }
+
+      function loadFromCache() {
+        try {
+          const data = localStorage.getItem(CACHE_KEY);
+          if (data) cachedTexts = JSON.parse(data);
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function saveToCache() {
+        try {
+          const data = localStorage.getItem(CACHE_KEY);
+          localStorage.setItem(CACHE_KEY, JSON.stringify(cachedTexts));
+        } catch (e) {
+          showToast("הזיכרון מלא");
+        }
+      }
+
+      function allTextsPage(state) {
+        const container = document.getElementById("all_texts");
+        container.innerHTML = "";
+
+        if (cachedTexts.length === 0) {
+          showToast("לא נמצאו טקסטים");
+          navigateTo("view-home", true);
+        } else {
+          cachedTexts.forEach((text, index) => {
+            const b = document.createElement("button");
+            b.className = "button";
+            b.innerHTML = createMarqueeText(text.name);
+            b.onclick = () => {
+              currentTextName = text.name;
+
+              if (state === "textPage") {
+                navigateTo("view-textPage", false);
+                return;
+              }
+              else if (state === "edit") {
+                resetAddForm();
+                document.getElementById("view-add-title").innerText = "עדכון טקסט";
+                document.getElementById("text-name").value = text.name;
+                document.getElementById("text-name").readOnly = true;
+                document.getElementById("text-name").classList.add("readonly-box");
+                document.getElementById("text-content").value = text.content;
+                navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
+                return;
+              }
+              else if (state === "delete") {
+                askDeleteText();
+                return;
+              }
+            };
+            container.appendChild(b);
+          });
+
+          navigateTo("view-texts", false);
+        }
+      }
+
+      function textPage(index) {
+        const text = cachedTexts[index];
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+        navigateTo("view-textPage", false);
+      }
+
+      function saveText() {
+        const nameInput = document.getElementById("text-name");
+        const contentInput = document.getElementById("text-content");
+
+        const name = nameInput.value.trim();
+        const content = contentInput.value.trim();
+
+        if (!name) {
+          showToast("השם לא יכול להיות ריק");
+          return;
+        }
+        if (!content) {
+          showToast("התוכן לא יכול להיות ריק");
+          return;
+        }
+
+        const existingIndex = cachedTexts.findIndex((t) => t.name === name);
+        if (existingIndex !== -1) {
+          cachedTexts[existingIndex].content = content;
+          showToast("הטקסט עודכן בהצלחה!");
+        } else {
+          cachedTexts.unshift({ name, content });
+          showToast("הטקסט נשמר בהצלחה!");
+        }
+
+        saveToCache();
+        navigateTo("view-home", true);
+        resetAddForm();
+        return;
+      };
+
+      function Type_from_memory() {
+        resetAddForm();
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+
+        document.getElementById("save-btn").style.display = "none";
+
+        document.getElementById("view-add-title").innerText = "הקלד מהזיכרון";
+
+        const nameInput = document.getElementById("text-name");
+        nameInput.value = text.name;
+        nameInput.readOnly = true;
+        nameInput.classList.add("readonly-box");
+        autoResize(nameInput);
+
+        document.getElementById("text-content").oninput = function() {
+          this.value = sanitizeText(this.value);
+          autoResize(this);
+          allTexts_for_Type_from_memory();
+          if (this.value.trim() === text.content) {
+            showToast("כל הכבוד! הטקסט הוקלד במלואו!");
+            this.readOnly = true;
+            this.classList.add("readonly-box");
+          }
+          else if (this.value.trim() == "") {
+            this.style.backgroundColor = "white";
+          }
+          else if (text.content.startsWith(this.value)) {
+            this.style.backgroundColor = "#C8FFC8"; // ירוק בהיר
+          }
+          else {
+            this.style.backgroundColor = "#FFC8C8"; // אדום בהיר
+          }
+        };
+
+        allTexts_for_Type_from_memory();
+
+        navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
+        return;
+      }
+
+      function allTexts_for_Type_from_memory() {
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+        
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+        
+        if (document.getElementById("text-content").value.trim() !== text.content) {
+
+          if (document.getElementById("original-text-content").value.trim() !== text.content) {
+            document.getElementById("all-texts-btn").style.display = "block";
+            document.getElementById("all-texts-btn").innerText = "חשוף את כל הטקסט";
+
+            document.getElementById("all-texts-btn").onclick = function() {
+              document.getElementById("original-content-label").style.display = "block";
+              document.getElementById("original-text-content").value = text.content;
+              document.getElementById("original-text-content").style.display = "block";
+              document.getElementById("original-text-content").readOnly = true;
+              document.getElementById("original-text-content").classList.add("readonly-box");
+              autoResize(document.getElementById("original-text-content"));
+              allTexts_for_Type_from_memory();
+            }
+          } else {
+            document.getElementById("all-texts-btn").innerText = "הסתר את הטקסט";
+            document.getElementById("all-texts-btn").onclick = function() {
+              document.getElementById("original-content-label").style.display = "none";
+              document.getElementById("original-text-content").value = "";
+              document.getElementById("original-text-content").style.display = "none";
+              document.getElementById("original-text-content").readOnly = false;
+              document.getElementById("original-text-content").classList.remove("readonly-box");
+              autoResize(document.getElementById("original-text-content"));
+              allTexts_for_Type_from_memory();
+            };
+          }
+
+        }
+        else {
+          document.getElementById("all-texts-btn").style.display = "none";
+          document.getElementById("original-content-label").style.display = "none";
+          document.getElementById("original-text-content").value = "";
+          document.getElementById("original-text-content").style.display = "none";
+          document.getElementById("original-text-content").readOnly = false;
+          document.getElementById("original-text-content").classList.remove("readonly-box");
+          autoResize(document.getElementById("original-text-content"));
+        }
+        return;
+      }
+
+      function Reveal_the_next_word() {
+        resetAddForm();
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+
+        let words = text.content.split(" ");
+        
+        document.getElementById("view-add-title").innerText = "חשוף את המילה הבאה";
+
+        const nameInput = document.getElementById("text-name");
+        nameInput.value = text.name;
+        nameInput.readOnly = true;
+        nameInput.classList.add("readonly-box");
+        autoResize(nameInput);
+
+        document.getElementById("original-text-content").value = words.slice(0, 1).join(" ");
+        autoResize(document.getElementById("original-text-content"));
+        document.getElementById("content-label").style.display = "none";
+        document.getElementById("text-content").style.display = "none";
+        document.getElementById("save-btn").style.display = "none";
+
+        document.getElementById("original-content-label").style.display = "block";
+        document.getElementById("original-text-content").style.display = "block";
+
+        nextWord();
+        allTexts_for_Reveal();
+        previousWord();
+
+        navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
+        return;
+      }
+
+      function nextWord() {
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+
+        const words = text.content.split(" ");
+
+        if (revealedWordsIndex !== words.length - 1) {
+          document.getElementById("next-word-btn").style.display = "block";
+          document.getElementById("next-word-btn").onclick = function() {
+            revealedWordsIndex++;
+            document.getElementById("original-text-content").value = words.slice(0, revealedWordsIndex + 1).join(" ");
+            autoResize(document.getElementById("original-text-content"));
+
+            if (revealedWordsIndex === words.length - 1) {
+              document.getElementById("all-texts-btn").style.display = "none";
+              this.style.display = "none";
+              showToast("כל המילים נחשפו!");
+            }
+            else if (revealedWordsIndex === 1) {
+              previousWord(revealedWordsIndex, words);
+            }
+          };
+        } else {
+          document.getElementById("next-word-btn").style.display = "none";
+          showToast("כל המילים כבר נחשפו!");
+        }
+        return;
+      }
+
+      function allTexts_for_Reveal() {
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+
+        const words = text.content.split(" ");
+
+        if (revealedWordsIndex !== words.length - 1) {
+          if (document.getElementById("original-text-content").value !== words.join(" ")) {
+            document.getElementById("all-texts-btn").style.display = "block";
+            document.getElementById("all-texts-btn").innerText = "חשוף את כל הטקסט";
+
+            document.getElementById("all-texts-btn").onclick = function() {
+              document.getElementById("original-text-content").value = words.join(" ");
+              autoResize(document.getElementById("original-text-content"));
+              document.getElementById("next-word-btn").style.display = "none";
+              document.getElementById("previous-word-btn").style.display = "none";
+              allTexts_for_Reveal();
+            }
+          } else {
+            document.getElementById("all-texts-btn").innerHTML = "הסתר את הטקסט";
+            document.getElementById("all-texts-btn").onclick = function() {
+              document.getElementById("original-text-content").value = words.slice(0, revealedWordsIndex + 1).join(" ");
+              autoResize(document.getElementById("original-text-content"));
+              document.getElementById("next-word-btn").style.display = "block";
+              if (revealedWordsIndex !== 0) document.getElementById("previous-word-btn").style.display = "block";
+              allTexts_for_Reveal();
+            };
+          };
+        }
+        else {
+          document.getElementById("all-texts-btn").style.display = "none";
+        }
+        return;
+      }
+
+      function previousWord() {
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+
+        const words = text.content.split(" ");
+
+        revealedWordsIndex !== 0 ? 
+          document.getElementById("previous-word-btn").style.display = "block" : 
+          document.getElementById("previous-word-btn").style.display = "none";
+        document.getElementById("previous-word-btn").onclick = function() {
+            if (revealedWordsIndex !== 0) {
+              revealedWordsIndex--;
+              document.getElementById("original-text-content").value = words.slice(0, revealedWordsIndex + 1).join(" ");
+              autoResize(document.getElementById("original-text-content"));
+
+               if (revealedWordsIndex === 0) {
+                document.getElementById("previous-word-btn").style.display = "none";
+              }
+               else if (revealedWordsIndex === words.length - 2) {
+                document.getElementById("next-word-btn").style.display = "block";
+                document.getElementById("all-texts-btn").style.display = "block";
+              }
+            } else {
+              document.getElementById("previous-word-btn").style.display = "none";
+            }
+          };
+        return;
+      }
+
+      function Complete_the_sentence() {
+        resetAddForm();
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+
+        let words = text.content.split(" ");
+
+        document.getElementById("save-btn").style.display = "none";
+
+        document.getElementById("view-add-title").innerText = "השלם את המשפט";
+        const nameInput = document.getElementById("text-name");
+        nameInput.value = text.name;
+        nameInput.readOnly = true;
+        nameInput.classList.add("readonly-box");
+        autoResize(nameInput);
+
+        const firstWordsCount = Math.floor(Math.random() * words.length - 6);
+        document.getElementById("text-content").value = words.slice(firstWordsCount, firstWordsCount + 5).join(" ") + " ...";
+        
+        document.getElementById("text-content").onfocus = function() {
+          if (this.value.endsWith(" ...")) {
+            this.value = this.value.slice(0, -4);
+            autoResize(this);
+          }
+          return;
+        };
+
+        document.getElementById("text-content").onblur = function() {
+          if (this.value.trim() !== words.slice(firstWordsCount, firstWordsCount + 6).join(" ")) {
+            this.value = words.slice(firstWordsCount, firstWordsCount + 5).join(" ") + " ...";
+            autoResize(this);
+          }
+          return;
+        };
+
+
+        document.getElementById("text-content").oninput = function() {
+          this.value = sanitizeText(this.value);
+          autoResize(this);
+          allTexts_for_Complete_the_sentence();
+
+          if (this.value.trim() === words.slice(firstWordsCount, firstWordsCount + 6).join(" ")) {
+            showToast("כל הכבוד! השלמת את המשפט!");
+            this.readOnly = true;
+            this.classList.add("readonly-box");
+          }
+          else if (this.value.trim() == "" || words.slice(firstWordsCount, firstWordsCount + 5).join(" ").startsWith(this.value.trim())) {
+            this.style.backgroundColor = "white";
+          }
+          else if (words.slice(firstWordsCount, firstWordsCount + 6).join(" ").startsWith(this.value)) {
+            this.style.backgroundColor = "#C8FFC8"; // ירוק בהיר
+          }
+          else {
+            this.style.backgroundColor = "#FFC8C8"; // אדום בהיר
+          }
+        };
+
+        allTexts_for_Complete_the_sentence();
+
+        navigateTo("view-add_+_edit_+_Type_from_memory_+_Reveal_the_next_word_+_Complete_the_sentence", false);
+        return;
+      }
+
+      function allTexts_for_Complete_the_sentence() {
+        const text = cachedTexts.find((t) => t.name === currentTextName);
+
+        if (!text) {
+          showToast("הטקסט לא נמצא");
+          navigateTo("view-home", true);
+          return;
+        }
+        
+        if (document.getElementById("text-content").value.trim() !== text.content) {
+
+          if (document.getElementById("original-text-content").value.trim() !== text.content) {
+            document.getElementById("all-texts-btn").style.display = "block";
+            document.getElementById("all-texts-btn").innerText = "חשוף את כל הטקסט";
+
+            document.getElementById("all-texts-btn").onclick = function() {
+              document.getElementById("original-content-label").style.display = "block";
+              document.getElementById("original-text-content").value = text.content;
+              document.getElementById("original-text-content").style.display = "block";
+              document.getElementById("original-text-content").readOnly = true;
+              document.getElementById("original-text-content").classList.add("readonly-box");
+              autoResize(document.getElementById("original-text-content"));
+              allTexts_for_Complete_the_sentence();
+            }
+          } else {
+            document.getElementById("all-texts-btn").innerText = "הסתר את הטקסט";
+            document.getElementById("all-texts-btn").onclick = function() {
+              document.getElementById("original-content-label").style.display = "none";
+              document.getElementById("original-text-content").value = "";
+              document.getElementById("original-text-content").style.display = "none";
+              document.getElementById("original-text-content").readOnly = false;
+              document.getElementById("original-text-content").classList.remove("readonly-box");
+              autoResize(document.getElementById("original-text-content"));
+              allTexts_for_Complete_the_sentence();
+            };
+          }
+
+        }
+        else {
+          document.getElementById("all-texts-btn").style.display = "none";
+          document.getElementById("original-content-label").style.display = "none";
+          document.getElementById("original-text-content").value = "";
+          document.getElementById("original-text-content").style.display = "none";
+          document.getElementById("original-text-content").readOnly = false;
+          document.getElementById("original-text-content").classList.remove("readonly-box");
+          autoResize(document.getElementById("original-text-content"));
+        }
+        return;
+      }
+
+
+      function sanitizeText(text) {
+        // 1. מחיקת סוגריים מכל הסוגים () [] {} והתוכן שבתוכם
+        // מחליפים ברווח כדי שמילים לפני ואחרי הסוגריים לא יידבקו
+        let cleaned = text.replace(/\([^)]*\)|\[[^\]]*\]|\{[^}]*\}/g, " ");
+
+        // 2. מסיר ניקוד וטעמים. 
+        // תיקון קריטי: הטווח פוצל כדי לא למחוק את המקף המקראי (05BE)
+        cleaned = cleaned.replace(/[\u0591-\u05BD\u05BF-\u05C7]/g, "");
+
+        // 4. הפיכת מקפים (רגיל, מקראי וכו') לרווח
+        cleaned = cleaned.replace(
+            /(?<=[\u05D0-\u05EAa-zA-Z])[\u05BE\u2010-\u2015-](?=[\u05D0-\u05EAa-zA-Z])/g,
+            " "
+          ).replace(
+            /(^|\s)[\u05BE\u2010-\u2015-]+|[\u05BE\u2010-\u2015-]+($|\s)/g,
+            ""
+          );
+
+        // 5. מחיקת כל שאר הסימנים והמספרים (הופכים לכלום - "")
+        cleaned = cleaned.replace(/[^\u05D0-\u05EAa-zA-Z\s\n~]/g, "");
+
+        // 3. הגנה על שמות קודש
+        cleaned = cleaned.replace(/אלהים/g, "השם")
+                        .replace(/יהוה/g, "השם")
+                        .replace(/אדני/g, "השם");
+
+        // 7. סידור רווחים - צמצום כל רצף רווחים לרווח אחד
+        cleaned = cleaned.replace(/ +/g, " ");
+
+        return cleaned.replace(/^ /g, "");
+      }
+
+      // function add_edit_TextPage(edit = false) {
+      //   const name = prompt("הכנס שם לטקסט:");
+      //   if (!name) {
+      //     showToast("השם לא יכול להיות ריק");
+      //     return;
+      //   }
+
+      //   const content = prompt("הכנס את תוכן הטקסט:");
+      //   if (!content) {
+      //     showToast("התוכן לא יכול להיות ריק");
+      //     return;
+      //   }
+
+      //   if (edit) {
+      //     const index = cachedTexts.findIndex((t) => t.name === name);
+      //     if (index !== -1) {
+      //       cachedTexts[index].content = content;
+      //       showToast("הטקסט עודכן בהצלחה!");
+      //     } else {
+      //       showToast("לא נמצא טקסט עם השם הזה");
+      //       return;
+      //     }
+      //   } else {
+      //     if (cachedTexts.some((t) => t.name === name)) {
+      //       showToast("כבר קיים טקסט בשם הזה");
+      //       return;
+      //     }
+      //     cachedTexts.unshift({ name, content });
+      //     showToast("הטקסט נשמר בהצלחה!");
+      //   }
+
+      //   saveToCache();
+      // }
+
+    //   window.onload = () => {
+    //     loadFromCache();
+    //     backgroundSync();
+
+    //     navigateTo("view-home", true);
+
+    //     const searchInput = document.getElementById("search-input");
+    //     if (searchInput) {
+    //       searchInput.addEventListener("keydown", (e) => {
+    //         if (e.key === "Enter") {
+    //           e.preventDefault();
+    //           searchRecipesLocal(searchInput.value);
+    //           // searchInput.value = "";
+    //         }
+    //       });
+    //     }
+
+    //     const recipeNameInput = document.getElementById("recipe-name");
+    //     if (recipeNameInput) {
+    //       recipeNameInput.addEventListener("keydown", (e) => {
+    //         if (e.key === "Enter") {
+    //           e.preventDefault();
+
+    //           const firstIngredient = document.querySelector(".ing-input");
+
+    //           if (firstIngredient) {
+    //             firstIngredient.focus();
+    //           }
+    //         }
+    //       });
+    //     }
+    //   };
+
+      window.onpopstate = (e) => {
+        if (
+          document.getElementById("delete-modal").classList.contains("active")
+        ) {
+          closeDeleteModal();
+          return;
+        }
+
+        const targetView = e.state && e.state.view ? e.state.view : "view-home";
+
+        // // מנגנון הגנה: אם המשתמש מנסה לחזור לדף טקסט, נבדוק אם הטקסט עדיין קיים
+        // if (targetView === "view-text") {
+        //   const textExists = cachedTexts.find(
+        //     (t) => t.name === currentTextName,
+        //   );
+        //   if (!textExists) {
+        //     // הטקסט נמחק! נעיף אותו לדף הבית במקום לדף שבור
+        //     history.replaceState({ view: "view-home" }, "", "#home");
+        //     switchViewElement("view-home");
+        //     return;
+        //   } else {
+        //     // הטקסט קיים, נרנדר אותו מחדש למקרה שהוא בדיוק נערך!
+        //     renderTextData(textExists);
+        //   }
+        // }
+
+        switchViewElement(targetView);
+      };
+
+      function navigateTo(viewId, replace = false) {
+        if (replace)
+          history.replaceState(
+            { view: viewId },
+            "",
+            `#${viewId.replace("view-", "")}`,
+          );
+        else
+          history.pushState(
+            { view: viewId },
+            "",
+            `#${viewId.replace("view-", "")}`,
+          );
+        switchViewElement(viewId);
+      }
+
+    //   // מצב עריכה
+    //   function openEditRecipe() {
+    //     isEditMode = true;
+    //     const recipe = cachedRecipes.find((r) => r.name === currentRecipeName);
+    //     if (!recipe) return;
+        
+    //     document.getElementById("view-add-title").innerText = "עדכון מתכון";
+        
+    //     const nameInput = document.getElementById("recipe-name");
+    //     nameInput.value = recipe.name;
+    //     nameInput.readOnly = true;
+    //     nameInput.classList.add("readonly-box"); // משחיר את הרקע קצת
+        
+    //     groceryList = [...recipe.ingredients, ""];
+    //     renderIngredients();
+
+    //     document.getElementById("recipe-method").value = recipe.method;
+        
+    //     navigateTo("view-add", true);
+
+    //     // תיקון הגובה: נמתין שהדף יוצג ואז נחשב גובה
+    //     setTimeout(() => {
+    //       autoResize(nameInput);
+
+    //       document.querySelectorAll(".ing-input").forEach((input) => {
+    //         autoResize(input);
+    //       });
+
+    //       autoResize(document.getElementById("recipe-method"));
+    //     }, 350);
+    //   }
+
+    //   // חזרה למצב הוספה רגיל
+      function resetAddForm() {
+        document.getElementById("view-add-title").innerText = "הוספת טקסט חדש";
+        
+        const nameInput = document.getElementById("text-name");
+        nameInput.value = "";
+        autoResize(nameInput);
+        nameInput.style.height = "auto";
+        nameInput.readOnly = false;
+        nameInput.classList.remove("readonly-box");
+
+        document.getElementById("original-content-label").style.display = "none";
+
+        const originalTextContent = document.getElementById("original-text-content");
+        originalTextContent.value = "";
+        autoResize(originalTextContent);
+        originalTextContent.style.display = "none";
+
+        document.getElementById("content-label").style.display = "block";
+
+        const contentInput = document.getElementById("text-content");
+        contentInput.style.display = "block";
+        contentInput.value = "";
+        autoResize(contentInput);
+        contentInput.style.height = "auto";
+        contentInput.style.backgroundColor = "white";
+        contentInput.readOnly = false;
+        contentInput.classList.remove("readonly-box");
+        contentInput.oninput = function() {
+          this.value = sanitizeText(this.value);
+          autoResize(this);
+        };
+        contentInput.onblur = function() {
+          this.value = this.value.trim();
+          autoResize(this);
+        };
+        
+
+        document.getElementById("next-word-btn").innerHTML = "חשוף את המילה הבאה";
+        document.getElementById("all-texts-btn").innerHTML = "חשוף את כל הטקסט";
+        document.getElementById("previous-word-btn").innerHTML = "חשוף את המילה הקודמת";
+        document.getElementById("next-word-btn").style.display = "none";
+        document.getElementById("all-texts-btn").style.display = "none";
+        document.getElementById("previous-word-btn").style.display = "none";
+
+        document.getElementById("save-btn").innerHTML = "שמירה";
+        document.getElementById("save-btn").onclick = saveText;
+      }
+
+      function switchViewElement(viewId) {
+        const currentView = document.querySelector(".view.active");
+        const nextView = document.getElementById(viewId);
+
+        if (currentView && currentView.id !== viewId) {
+          currentView.classList.remove("active");
+          // setTimeout(() => {
+            currentView.style.display = "none";
+            showNextView(nextView, viewId);
+          // }, 300);
+        } else {
+          showNextView(nextView, viewId);
+        }
+      }
+
+      function showNextView(nextView, viewId) {
+        nextView.style.display = "flex";
+        void nextView.offsetWidth;
+        nextView.classList.add("active");
+        document.documentElement.scrollTop = 0;
+        document.body.scrollTop = 0;
+        if (viewId === "view-edit") {
+          autoResize(document.getElementById("text-name"));
+          autoResize(document.getElementById("text-content"));
+        }
+      }
+
+      function showToast(msg) {
+        const t = document.getElementById("toast");
+        t.innerText = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 3000);
+      }
+
+      function createMarqueeText(text) {
+        if (text.length > 35) {
+          // משכפלים את הטקסט כדי ליצור רצף אינסופי
+          const separator = "&nbsp;".repeat(15);
+          const content = `${text}${separator}${text}${separator}`;
+          return `
+            <div class="marquee-container">
+              <div class="marquee-text">
+                ${content} </div>
+            </div>`;
+        }
+        return text;
+      }
+
+    //   function normalizeHebrew(str) {
+    //     return str
+    //       .replace(/ך/g, "כ")
+    //       .replace(/ם/g, "מ")
+    //       .replace(/ן/g, "נ")
+    //       .replace(/ף/g, "פ")
+    //       .replace(/ץ/g, "צ");
+    //   }
+
+    //   // חיפוש כולל תמיכה בנקודה (.)
+    //   function searchRecipesLocal(query) {
+    //     lastSearchQuery = query;
+    //     const term = query.trim();
+    //     let results = cachedRecipes;
+
+    //     if (term && term !== ".") {
+    //       results = cachedRecipes.filter((r) =>
+    //         normalizeHebrew(r.name).includes(normalizeHebrew(term)),
+    //       );
+    //       results.sort((a, b) => a.name.indexOf(term) - b.name.indexOf(term));
+    //     }
+
+    //     const list = document.getElementById("search-results");
+    //     list.innerHTML = "";
+
+    //     if (results.length === 0) {
+    //       list.innerHTML = "<p style='color: #64748b; display: flex; align-items: center; justify-content: center; text-decoration: none;'>לא נמצאו מתכונים</p>";
+    //       showToast("לא נמצאו מתכונים");
+    //     } else {
+    //       results.forEach((recipe) => {
+    //         const b = document.createElement("button");
+    //         b.className = "button";
+    //         b.innerHTML = createMarqueeText(recipe.name);
+    //         b.onclick = () => {
+    //           // 🔴 התיקון: שולפים את הנתונים המעודכנים ביותר לפי השם רגע לפני המעבר
+    //           const latestData =
+    //             cachedRecipes.find((r) => r.name === recipe.name) || recipe;
+
+    //           renderRecipeData(latestData);
+    //           navigateTo("view-recipe", false);
+    //         };
+    //         list.appendChild(b);
+    //       });
+    //       navigateTo("view-search", false);
+    //       if (document.getElementById("search-input")) {
+    //         document.getElementById("search-input").value = "";
+    //       }
+    //     }
+    //   }
+
+    //   function renderRecipeData(recipe) {
+    //     currentRecipeName = recipe.name;
+    //     document.getElementById("display-name").innerHTML = createMarqueeText(
+    //       recipe.name,
+    //     );
+    //     document.getElementById("display-ingredients").innerHTML =
+    //       recipe.ingredients.map((i) => `<li>${i}</li>`).join("");
+    //     document.getElementById("display-method").innerText = recipe.method;
+    //   }
+
+    //   async function saveRecipe() {
+    //     const name = document.getElementById("recipe-name").value.trim();
+    //     const method = document.getElementById("recipe-method").value.trim();
+    //     const ingredients = groceryList.filter((item) => item.trim() !== "");
+
+    //     if (!isEditMode && cachedRecipes.some((r) => r.name === name)) {
+    //       showToast("כבר קיים מתכון בשם הזה");
+    //       return;
+    //     }
+
+    //     if (!name || !method || ingredients.length === 0) {
+    //       showToast("חובה למלא שם, מצרכים ואופן הכנה");
+    //       return;
+    //     }
+
+    //     const newRecipe = { name, ingredients, method };
+    //     const saveBtn = document.getElementById("save-btn");
+    //     saveBtn.disabled = true;
+
+    //     const actionType = isEditMode ? "updateRecipe" : "addRecipe";
+
+    //     // 1. ממשק אופטימי - שמירה בזיכרון
+    //     if (isEditMode) {
+    //       const index = cachedRecipes.findIndex((r) => r.name === name);
+    //       if (index > -1) cachedRecipes[index] = newRecipe;
+    //     } else {
+    //       cachedRecipes.unshift(newRecipe);
+    //     }
+    //     saveToCache();
+
+    //     showToast(isEditMode ? "המתכון עודכן בהצלחה!" : "המתכון נשמר בהצלחה!");
+    //     renderRecipeData(newRecipe);
+    //     saveBtn.disabled = false;
+
+    //     if (isEditMode) {
+    //       navigateTo("view-recipe", true);
+    //     } else {
+    //       // אם זה מתכון חדש, הולכים קדימה
+    //       renderRecipeData(newRecipe);
+    //       navigateTo("view-recipe", true);
+    //     }
+
+    //   }
+
+      function askDeleteText() {
+        document.getElementById("delete-modal").classList.add("active");
+      }
+
+      function closeDeleteModal() {
+        document.getElementById("delete-modal").classList.remove("active");
+      }
+
+      function DeleteText() {
+        closeDeleteModal();
+        const textIndex = cachedTexts.findIndex(
+          (r) => r.name === currentTextName,
+        );
+        if (textIndex === -1) return;
+
+        cachedTexts.splice(textIndex, 1);
+        saveToCache();
+        showToast("הטקסט נמחק");
+
+        // רענון דף הטקסטים כדי להסיר את הטקסט שנמחק
+        allTextsPage("delete");
+      };
+
+    //   function renderIngredients() {
+    //     const container = document.getElementById("ingredients-list");
+    //     container.innerHTML = "";
+    //     groceryList.forEach((item, index) => {
+    //       createIngredientInput(index, item);
+    //     });
+    //   }
+
+    //   function createIngredientInput(index, value) {
+    //     const container = document.getElementById("ingredients-list");
+    //     const input = document.createElement("textarea");
+    //     input.type = "text";
+    //     input.className = "input ing-input";
+    //     input.dataset.index = index;
+    //     input.value = value;
+    //     input.placeholder = index === 0 ? "הוסף מצרך ראשון" : "הוסף מצרך נוסף";
+
+    //     // כיבוי השלמה אוטומטית לשדות המצרכים הדינמיים
+    //     input.setAttribute("autocorrect", "off");
+    //     input.setAttribute("autocapitalize", "off");
+    //     input.setAttribute("spellcheck", "false");
+
+    //     input.setAttribute("autocomplete", "off");
+    //     input.setAttribute("data-lpignore", "true");
+    //     input.setAttribute("data-form-type", "other");
+    //     input.setAttribute("name", "no-autofill");
+
+    //     input.oninput = (e) => {
+    //       const currentIndex = Number(input.dataset.index);
+
+    //       groceryList[currentIndex] = e.target.value;
+
+    //       autoResize(e.target);
+
+    //       if (
+    //         currentIndex === groceryList.length - 1 &&
+    //         e.target.value.trim() !== ""
+    //       ) {
+    //         groceryList.push("");
+    //         createIngredientInput(groceryList.length - 1, "");
+    //       }
+    //     };
+
+    //     input.onkeydown = (e) => {
+    //       const currentIndex = Number(input.dataset.index);
+
+    //       if (e.key === "Enter" || e.key === "Tab") {
+    //         if (e.key === "Enter") {
+    //           e.preventDefault();
+    //         }
+
+    //         const allInputs = container.querySelectorAll(".ing-input");
+
+    //         if (allInputs[currentIndex + 1]) {
+    //           allInputs[currentIndex + 1].focus();
+    //         }
+    //       }
+    //     };
+
+    //     input.onblur = (e) => {
+    //       const inputEl = e.target;
+
+    //       const currentIndex = Number(inputEl.dataset.index);
+    //       const val = inputEl.value.trim();
+
+    //       groceryList[currentIndex] = val;
+
+    //       const isNotLast = currentIndex !== groceryList.length - 1;
+    //       const hasMoreThanOne = groceryList.length > 1;
+
+    //       if (val === "" && isNotLast && hasMoreThanOne) {
+    //         // מחיקה מהמערך
+    //         groceryList.splice(currentIndex, 1);
+
+    //         // מחיקה מה־DOM
+    //         inputEl.remove();
+
+    //         // עדכון אינדקסים לכל השדות שנשארו
+    //         container.querySelectorAll(".ing-input").forEach((el, i) => {
+    //           el.dataset.index = i;
+    //         });
+    //       }
+    //     };
+
+    //     container.appendChild(input);
+    //     autoResize(input);
+    //   }
+
+      function autoResize(el) {
+        const scrollY = window.scrollY;
+        el.style.height = "auto";
+        el.style.height = el.scrollHeight + "px";
+        window.scrollTo(0, scrollY);
+      }
+
+      document.addEventListener(
+        "touchstart",
+        function (event) {
+          if (event.touches.length > 1) event.preventDefault();
+        },
+        { passive: false },
+      );
+
+      let lastTouchEnd = 0;
+      document.addEventListener(
+        "touchend",
+        function (event) {
+          const now = new Date().getTime();
+          if (now - lastTouchEnd <= 300) event.preventDefault();
+          lastTouchEnd = now;
+        },
+        false,
+      );
+
+    //   // מניעת לחיצה ימנית על כל התמונות בדף
+      document.addEventListener(
+        "contextmenu",
+        function (e) {
+          if (e.target.tagName === "IMG") {
+            e.preventDefault();
+          }
+        },
+        false,
+      );
+    </script>
+
+    <script>
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("sw.js").catch(function (error) {
+          console.log("Service worker registration failed:", error);
+        });
+      }
+    </script>
+  </body>
+</html>
