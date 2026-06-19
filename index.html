@@ -223,7 +223,6 @@
         margin-bottom: clamp(0rem, min(15vh, 50vw), 8rem);
         margin-left: auto;
         margin-right: auto;
-        /* border-radius: 50%; */
         object-fit: cover;
       }
 
@@ -574,6 +573,8 @@
           showToast("לא נמצאו טקסטים");
           navigateTo("view-home", true);
         } else {
+          cachedTexts.sort((a, b) => a.name.localeCompare(b.name));
+
           cachedTexts.forEach((text, index) => {
             const b = document.createElement("button");
             b.className = "button";
@@ -918,7 +919,9 @@
         nameInput.classList.add("readonly-box");
         autoResize(nameInput);
 
-        const firstWordsCount = Math.floor(Math.random() * words.length - 6);
+        const maxStartIndex = words.length - 6;
+        const firstWordsCount = Math.floor(Math.random() * (maxStartIndex + 1));
+        console.log("firstWordsCount:", firstWordsCount);
         document.getElementById("text-content").value = words.slice(firstWordsCount, firstWordsCount + 5).join(" ") + " ...";
         
         document.getElementById("text-content").onfocus = function() {
@@ -926,6 +929,11 @@
             this.value = this.value.slice(0, -3);
             autoResize(this);
           }
+          const el = this;
+          setTimeout(() => {
+            el.selectionStart = el.selectionEnd = el.value.length;
+          }, 0);
+
           return;
         };
 
@@ -1047,9 +1055,12 @@
         cleaned = cleaned.replace(/[^\u05D0-\u05EAa-zA-Z\s\n~]/g, "");
 
         // 3. הגנה על שמות קודש
-        cleaned = cleaned.replace(/אלהים/g, "השם")
-                        .replace(/יהוה/g, "השם")
-                        .replace(/אדני/g, "השם");
+        cleaned = cleaned.replace(/אלהים/g, "אלקים")
+                         .replace(/אלוהים/g, "אלוקים")
+                         .replace(/אלהי/g, "אלקי")
+                         .replace(/אלוהי/g, "אלוקי")
+                         .replace(/יהוה/g, "השם")
+                         .replace(/אדני/g, "השם");
 
         // 7. סידור רווחים - צמצום כל רצף רווחים לרווח אחד
         cleaned = cleaned.replace(/ +/g, " ");
