@@ -1055,11 +1055,7 @@
         cleaned = cleaned.replace(/[^\u05D0-\u05EAa-zA-Z\s\n~]/g, "");
 
         // 3. הגנה על שמות קודש
-        cleaned = cleaned.replace(/אלהים/g, "אלקים")
-                         .replace(/אלוהים/g, "אלוקים")
-                         .replace(/אלהי/g, "אלקי")
-                         .replace(/אלוהי/g, "אלוקי")
-                         .replace(/יהוה/g, "השם")
+        cleaned = cleaned.replace(/יהוה/g, "השם")
                          .replace(/אדני/g, "השם");
 
         // 7. סידור רווחים - צמצום כל רצף רווחים לרווח אחד
